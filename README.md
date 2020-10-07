@@ -1,6 +1,6 @@
 # SpeechJammer
 
-A system that uses daf DAF(Delayed Auditory Feedback) to jam speech.
+A system that uses DAF(Delayed Auditory Feedback) to jam speech.
 
 ## Requirements
 
