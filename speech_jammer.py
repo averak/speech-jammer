@@ -5,10 +5,9 @@ import math
 import time
 
 
-CHUNK = 1024
-RATE = 44100
-rec_voices = []
-import time
+CHUNK = 512
+RATE = 16000
+
 
 def streaming(stream):
     return stream.read(CHUNK, exception_on_overflow=False)
@@ -18,21 +17,14 @@ def play(stream, voice):
     stream.write(voice)
 
 
-def recording(stream):
-    while True:
-        rec_voices.append(streaming(stream))
+def jammer(stream, voice):
+    delay = 0.1 + (0.05 * math.sin(2 * math.pi * time.time()))
+    print('D = 0.1 + 0.05sin(2πT) = %6.5f' % delay)
+    if delay > 0:
+        time.sleep(delay - (CHUNK / RATE))
+    play(stream, voice)
 
 
-def daf(stream):
-    while True:
-        if rec_voices != []:
-            #delay = abs(0.05 * math.sin(2 * math.pi * time.time()))
-            #time.sleep(delay)
-            play(stream, rec_voices[0])
-            rec_voices.pop(0)
-
-
-# pyaudio settings
 pa = pyaudio.PyAudio()
 stream = pa.open(
     format=pyaudio.paInt16,
@@ -43,9 +35,7 @@ stream = pa.open(
     frames_per_buffer=CHUNK,
 )
 
-thread1 = threading.Thread(target=recording, args=(stream,))
-thread2 = threading.Thread(target=daf, args=(stream,))
-thread1.start()
-thread2.start()
-thread1.join()
-thread2.join()
+while True:
+    voice = streaming(stream)
+    thread = threading.Thread(target=jammer, args=(stream, voice,))
+    thread.start()
